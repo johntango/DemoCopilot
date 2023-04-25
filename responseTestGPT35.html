@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Response Time Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        background-color: #f2f2f2;
+      }
+
+      button {
+        font-size: 24px;
+        padding: 20px 40px;
+        margin: 20px;
+        cursor: pointer;
+      }
+
+      .green {
+        background-color: green;
+        color: white;
+      }
+
+      .red {
+        background-color: red;
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Response Time Test</h1>
+    <label for="name">Enter your name:</label>
+    <input type="text" id="name" />
+    <button id="testButton" class="green" onclick="startTest()">
+      Start Test
+    </button>
+    <p id="result"></p>
+    <p id="fastestTime">Fastest Time: --</p>
+    <script>
+      let name = document.getElementById("name");
+      let testButton = document.getElementById("testButton");
+      let result = document.getElementById("result");
+      let fastestTime = document.getElementById("fastestTime");
+      let startTime, endTime;
+
+      function startTest() {
+        if (name.value === "") {
+          alert("Please enter your name.");
+          return;
+        }
+
+        testButton.textContent = "Wait for Red";
+        testButton.classList.remove("green");
+        testButton.disabled = true;
+        setTimeout(() => {
+          testButton.classList.add("red");
+          testButton.textContent = "Click Me!";
+          testButton.disabled = false;
+          startTime = new Date().getTime();
+        }, Math.floor(Math.random() * 5000) + 1000);
+      }
+
+      function recordResponseTime() {
+        endTime = new Date().getTime();
+        let responseTime = (endTime - startTime) / 1000;
+        result.textContent = `${
+          name.value
+        } - Response Time: ${responseTime.toFixed(2)}s`;
+        updateFastestTime(responseTime);
+        storeResponseTime(responseTime);
+        resetAll();
+      }
+      function resetAll() {
+        testButton.disabled = true;
+        result.textContent = "";
+        testButton.classList.remove("red");
+        testButton.classList.add("green");
+        testButton.textContent = "Start Test";
+      }
+      function updateFastestTime(responseTime) {
+        storeResponseTime(responseTime);
+        displayFastestTime();
+      }
+
+      function storeResponseTime(responseTime) {
+        let storedTimes =
+          JSON.parse(localStorage.getItem("responseTimes")) || [];
+        storedTimes.push({ name: name.value, time: responseTime });
+        localStorage.setItem("responseTimes", JSON.stringify(storedTimes));
+        updateFastestTime(responseTime);
+      }
+
+      testButton.addEventListener("click", () => {
+        if (testButton.classList.contains("red")) {
+          recordResponseTime();
+        }
+      });
+
+      function displayFastestTime() {
+        let storedTimes =
+          JSON.parse(localStorage.getItem("responseTimes")) || [];
+        if (storedTimes.length > 0) {
+          // get the fastest time and name from storedTimes array s
+          let fastest = storedTimes.reduce((prev, curr) =>
+            prev.time < curr.time ? prev : curr
+          );
+
+          fastestTime.textContent = `Fastest Time: ${fastest.time}ms by ${fastest.name}`;
+        }
+      }
+
+      displayFastestTime();
+    </script>
+  </body>
+</html>

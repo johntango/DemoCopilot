@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Reaction Time Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+      }
+
+      input[type="text"],
+      button {
+        font-size: 16px;
+        padding: 10px;
+        margin: 10px;
+        border: none;
+        border-radius: 5px;
+      }
+
+      button.green {
+        background-color: green;
+        color: white;
+      }
+
+      button.red {
+        background-color: red;
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Reaction Time Test</h1>
+    <label for="username">Enter your name:</label>
+    <input type="text" id="username" placeholder="Your name" />
+    <button id="startButton" class="green">Mouse Down to Start</button>
+    <div id="fastestTime"></div>
+    <div id="reactions"></div>
+    <script>
+      const startButton = document.getElementById("startButton");
+      const usernameInput = document.getElementById("username");
+      let startTime = null;
+      let randomTimerId = null;
+      let fastestTime = null;
+      let fastestUser = null;
+
+      function startRandomTimer() {
+        // Check if the user has entered a name
+        if (usernameInput.value === "") {
+          alert("Please enter your name.");
+          return;
+        }
+
+        // Check if the button is in start mode
+        if (!startButton.classList.contains("green")) {
+          return;
+        }
+
+        // Change the button color to red after a random delay
+        let delay = Math.floor(Math.random() * 3000) + 1000;
+        randomTimerId = setTimeout(() => {
+          startButton.classList.remove("green");
+          startButton.classList.add("red");
+          startButton.innerHTML = "Click Fast!";
+
+          // Start the reaction timer
+          startTime = new Date().getTime();
+        }, delay);
+      }
+
+      function stopRandomTimer() {
+        // Check if the button is in red mode
+        if (startButton.classList.contains("green")) {
+          return;
+        }
+
+        // Clear the random timer
+        clearTimeout(randomTimerId);
+
+        // Calculate the reaction time in milliseconds
+
+        let endTime = new Date().getTime();
+        let reactionTime = (endTime - startTime) / 1000;
+        // change to 2 decimal places
+        reactionTime = reactionTime.toFixed(2);
+
+        // Store the reaction time in local storage
+        let user = {
+          name: usernameInput.value,
+          reactionTime: reactionTime,
+        };
+        localStorage.setItem("user", JSON.stringify(user));
+
+        // Display the user's reaction time on the page
+        let reactionDiv = document.getElementById("reactions");
+        reactionDiv.innerHTML += `${user.name}: ${user.reactionTime} ms<br />`;
+        //reactionDiv.innerHTML = `${user.name}: ${user.reactionTime} ms`;
+
+        // Check if this is the fastest time
+        if (fastestTime === null || reactionTime < fastestTime) {
+          fastestTime = reactionTime;
+          fastestUser = user.name;
+
+          // Display the new fastest time
+          let fastestDiv = document.getElementById("fastestTime");
+          fastestDiv.innerHTML = `New fastest time: ${fastestUser}: ${fastestTime} ms`;
+        }
+
+        // Reset the input and button
+        usernameInput.value = "";
+        startButton.classList.remove("red");
+        startButton.classList.add("green");
+        startButton.innerHTML = "Mouse Down to Start";
+      }
+      // start the random timer on mouse down
+      startButton.addEventListener("mousedown", startRandomTimer);
+      // stop the random timer on mouse up
+      startButton.addEventListener("mouseup", stopRandomTimer);
+    </script>
+  </body>
+</html>
